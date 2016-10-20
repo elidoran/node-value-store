@@ -7,7 +7,7 @@ Get/set values on hierarchy of objects.
 
 For example, a hierarchy of configuration files could be turned into a 'value-store'. Then it can be queried for the closest key with a value, or, for all values for a key.
 
-Note, I'm using this in [nuc](https://npmjs.com/package/nuc)
+Note, I'm using this in [nuc](https://npmjs.com/package/nuc).
 
 ## Install
 
