@@ -1,0 +1,39 @@
+{
+  "name": "value-store",
+  "version": "0.1.0",
+  "description": "Get/set values on hierarchy of objects",
+  "main": "lib",
+  "keywords": [
+    "value",
+    "store",
+    "key",
+    "values",
+    "keys",
+    "hierarchy",
+    "configuration",
+    "configure",
+    "config"
+  ],
+  "author": "Eli Doran <eli+npm@elidoran.com>",
+  "license": "MIT",
+  "scripts": {
+    "compile": "coffee --bare --compile lib",
+    "clean": "rm -rf lib/*.js",
+    "prepublish": "npm run compile",
+    "postpublish": "npm run clean",
+    "test": "mocha --compilers coffee:coffee-script/register --reporter spec --bail --check-leaks test/lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/elidoran/node-value-store.git"
+  },
+  "bugs": "http://github.com/elidoran/node-value-store/issues",
+  "devDependencies": {
+    "coffee-script": "^1.11.1",
+    "mocha": "^3.1.2"
+  },
+  "dependencies": {},
+  "engines": {
+    "node": ">=0.12"
+  }
+}
