@@ -135,7 +135,7 @@ describe 'test value store', ->
       }
 
       assert.deepEqual store.append('bad'), {
-        error:'String must be a require()\'able file with extension \'.json\''
+        error:'String must be a json or ini file'
       }
 
       assert.deepEqual store.append('./nonexistent.json'), {
@@ -166,7 +166,7 @@ describe 'test value store', ->
       }
 
       assert.deepEqual store.prepend('bad'), {
-        error:'String must be a require()\'able file with extension \'.json\''
+        error:'String must be a json or ini file'
       }
 
       assert.deepEqual store.prepend('./nonexistent.json'), {

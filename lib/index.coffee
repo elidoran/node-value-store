@@ -1,4 +1,8 @@
 
+ini = require 'ini'
+
+readIni = (file) -> ini.parse fs.readFileSync(file, 'utf8')
+
 # TODO:
 # consider extending EventEmitter to provide events when:
 #  1. value is set, can provide old value
@@ -159,31 +163,43 @@ class ValueStore
   _insert: (first, thing) ->
 
     switch typeof thing
+
+      # a string should be a path to a file to read
       when 'string'
 
-        # check if it's a json file...
-        if thing[-5..] is '.json'
+        # decide which way to conver the file contents into an object
+        parse =
+          # for a .json file, use require()
+          if thing[-5..] is '.json' then require
 
-          # try to require it
-          try
-            object = require thing
+          # for an '.ini' file, use readIni()
+          else if thing[-5..] is '.ini' then readIni
 
-            # record the source is a file and the function called to add it
-            object.__source ?=
-              file: thing
-              fn  : if first then 'prepend' else 'append'
+          # otherwise, it's not going to work
+          else null
 
-          catch error
-            # if it couldn't find the file then say so
-            if error.code is 'MODULE_NOT_FOUND'
-              return error:'File doesn\'t exist: '+thing
+        # if it wasn't the right type, then parse doesn't exist
+        unless parse? # so, return an error
+          return error:'String must be a json or ini file'
 
-            # otherwise, be generic and include the real error object as `reason`
-            return error:'Failed to require file', reason:error
+        # now really try to parse the thing
+        try
+          object = parse thing
 
-        # it's not a json file!
-        else
-          return error:'String must be a require()\'able file with extension \'.json\''
+          # record the source is a file and the function called to add it
+          object.__source ?=
+            file: thing
+            fn  : if first then 'prepend' else 'append'
+
+
+        catch error
+          # if it couldn't find the file then say so
+          if error.code is 'MODULE_NOT_FOUND' or error.code is 'ENOENT'
+            return error:'File doesn\'t exist: '+thing
+
+          # otherwise, be generic and include the real error object as `reason`
+          return error:'Failed to require file', reason:error
+
 
       # objects only need their source set, unless it is already
       when 'object'
