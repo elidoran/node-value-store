@@ -1,6 +1,13 @@
+
+0.3.3 - Released 2016/10/22
+
+1. add a newline to `write()` output
+2. make JSON pretty printed
+3. add `write()` example to README
+
 0.3.2 - Released 2016/10/22
 
-1. fixed bug in `write()` when accessing options.format the options may be null 
+1. fixed bug in `write()` when accessing options.format the options may be null
 
 0.3.1 - Released 2016/10/22
 
