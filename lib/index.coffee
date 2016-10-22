@@ -3,7 +3,8 @@ fs = require 'fs'
 corepath = require 'path'
 ini = require 'ini'
 
-readIni = (file) -> ini.parse fs.readFileSync(file, 'utf8')
+readJson = (file) -> JSON.parse fs.readFileSync(file, 'utf8')
+readIni  = (file) -> ini.parse fs.readFileSync(file, 'utf8')
 
 # TODO:
 # consider extending EventEmitter to provide events when:
@@ -153,29 +154,32 @@ class ValueStore
 
   # object or a string referencing a json file to require()
   # put it at the end of the array
-  append: (thing) -> @_insert false, thing
+  append: (thing, options) -> @_insert false, thing, options
 
   # object or a string referencing a json file to require()
   # put it at the front of the array
-  prepend: (thing) -> @_insert true, thing
+  prepend: (thing, options) -> @_insert true, thing, options
 
   # used by both append() and prepend()
   # append() sets first = false
   # prepend() sets first = true
-  _insert: (first, thing) ->
+  _insert: (first, thing, options) ->
 
     switch typeof thing
 
       # a string should be a path to a file to read
       when 'string'
 
+        # ensure absolute path
+        thing = corepath.resolve thing
+
         # decide which way to conver the file contents into an object
         parse =
           # for a .json file, use require()
-          if thing[-5..] is '.json' then require
+          if thing[-5..] is '.json' or options?.format is 'json' then readJson
 
           # for an '.ini' file, use readIni()
-          else if thing[-5..] is '.ini' then readIni
+          else if thing[-4..] is '.ini' or options?.format is 'ini' then readIni
 
           # otherwise, it's not going to work
           else null
@@ -189,8 +193,10 @@ class ValueStore
           object = parse thing
 
           # record the source is a file and the function called to add it
+          # record the format too
           object.__source ?=
             file: thing
+            format: if parse is readJson then 'json' else 'ini'
             fn  : if first then 'prepend' else 'append'
 
 
@@ -222,13 +228,14 @@ class ValueStore
   # it returns the ones removed
   shift: (count = 1) ->
     if count < 1 then return removed:[]
-    removed:@array[...count]
+    removed:@array.shift()
 
   # like with an array, remove sources from the end of the array
   # it returns the ones removed
   pop: (count = 1) ->
     if count < 1 then return removed:[]
-    removed:@array[-count..]
+    removed:@array.pop()
+
 
   write: (index = 0, options) ->
 
@@ -251,11 +258,15 @@ class ValueStore
     ext = corepath.extname file
 
     # choose stringify based on specified format option or file extension
+    # or the format it was read in as.
     # basically, it's ini only if they say so or the extension is, otherwise,
     # it's json
     stringify =
-      if options?.format is 'ini' or ext is 'ini' then ini.stringify
-      else JSON.stringify
+      if options?.format is 'ini' or source.format is 'ini' or ext is '.ini'
+        ini.stringify.bind ini, object, whitespace:true
+
+      # bind it so we can specify args and make it pretty print
+      else JSON.stringify.bind JSON, object, null, 2
 
     # wrap it so we can return an `fs` modules error as an object
     try
@@ -265,7 +276,7 @@ class ValueStore
       delete object.__source
 
       # do the work (add a newline at the end to ensure it's there...)
-      fs.writeFileSync file, stringify(object) + '\n', 'utf8'
+      fs.writeFileSync file, stringify() + '\n', 'utf8'
 
     catch error
       # return error, include a good message and the thrown error
