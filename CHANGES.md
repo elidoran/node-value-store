@@ -1,3 +1,10 @@
+
+0.3.6 - Released 2016/10/22
+
+1. moved `set()` index check to the top in case `@array` is empty
+2. revised `shift()` and `pop()` to work the way I originally intended
+3. modified test suite to handle all these changes
+
 0.3.5 - Released 2016/10/22
 
 1. removed default index value of 0 from `set` and `remove`
