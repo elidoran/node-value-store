@@ -79,8 +79,8 @@ values.append({ name:'last', something: 'new'});
 // this essentially overrides all the others.
 values.prepend({ name:'overrider' });
 
-// add values from a file (specify name or readable stream)
-values.appendFile('./some/file.json');
+// add values from a file (specify path)
+values.append('./some/file.json');
 
 // rerun the above series and the new output will be:
 /*
@@ -124,6 +124,21 @@ values.shift(2);
 // this removes the last two
 values.pop(2);
 // so, now there are the 2 middle ones left.
+
+// when a file is added via its path the path is recorded as its 'source'
+values.append('./some/file.json');
+// then, that object can be written back to its source.
+// let's say the above append put that file as source 3 (4th in array).
+// then this would write it back out
+values.write(3);
+// it will be written as json because the extension is .json
+// to alter where it's written to and the format you may pass options:
+values.write(3, { file: './some/other/file.ini' });
+// the above will be written as an INI file because the extension is '.ini'.
+// you may also specify the format:
+values.write(3, { file: './other.conf', format:'ini' });
+// JSON is the default format. INI is the alternate format.
+
 ```
 
 ## MIT License
