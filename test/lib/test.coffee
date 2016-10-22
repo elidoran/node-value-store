@@ -92,22 +92,26 @@ describe 'test value store', ->
 
     it 'to add() should return error', ->
 
-      assert.deepEqual store.add(), error:'No key specified'
-      assert.deepEqual store.add('key'), error:'No value specified'
+      assert.deepEqual store.add(), error:'Invalid index: 0'
+      assert.deepEqual store.add('key'), error:'Invalid index: 0'
+
       assert.deepEqual store.add('key', 'value'), error:'Invalid index: 0'
       assert.deepEqual store.add('key', 'value', -1), error:'Invalid index: -1'
       assert.deepEqual store.add('key', 'value', 99), error:'Invalid index: 99'
 
     it 'to remove() should return error', ->
 
-      assert.deepEqual store.remove(), error:'No key specified'
+      assert.deepEqual store.remove(), error:'Invalid index: 0'
+
       assert.deepEqual store.remove('key', -1), error:'Invalid index: -1'
       assert.deepEqual store.add('key', 'value'), error:'Invalid index: 0'
 
     it 'to set() should return error', ->
 
-      assert.deepEqual store.set(), error:'No key specified'
-      assert.deepEqual store.set('key'), error:'No value specified'
+      assert.deepEqual store.set(), error:'Invalid index: 0'
+
+      assert.deepEqual store.set('key'), error:'Invalid index: 0'
+
       assert.deepEqual store.set('key', 'value'), error:'Invalid index: 0'
       assert.deepEqual store.set('key', 'value', -1), error:'Invalid index: -1'
       assert.deepEqual store.set('key', 'value', 99), error:'Invalid index: 99'
@@ -139,7 +143,7 @@ describe 'test value store', ->
       }
 
       assert.deepEqual store.append('./nonexistent.json'), {
-        error:'File doesn\'t exist: ./nonexistent.json'
+        error:'File doesn\'t exist: ' + corepath.resolve './nonexistent.json'
       }
 
 
@@ -170,7 +174,7 @@ describe 'test value store', ->
       }
 
       assert.deepEqual store.prepend('./nonexistent.json'), {
-        error:'File doesn\'t exist: ./nonexistent.json'
+        error:'File doesn\'t exist: ' + corepath.resolve './nonexistent.json'
       }
 
     it 'to shift() should return empty array', ->
@@ -253,12 +257,11 @@ describe 'test value store', ->
       assert.deepEqual store.array[0], {
         __source:
           file: file
+          format: 'json'
           fn: 'append'
       }
       # reset
       store.array.pop()
-      # ensure it's empty again
-      delete require.cache[file].exports.__source
 
     it 'should return true for prepend(object)', ->
       assert store.array, 'array should exist'
@@ -283,12 +286,11 @@ describe 'test value store', ->
       assert.deepEqual store.array[0], {
         __source:
           file: file
+          format: 'json'
           fn: 'prepend'
       }
       # reset
       store.array.pop()
-      # ensure it's empty again
-      delete require.cache[file].exports.__source
 
     it 'should return removed:[] for shift()', ->
       assert.deepEqual store.shift(), removed:[]
@@ -326,23 +328,27 @@ describe 'test value store', ->
       assert.deepEqual store.all('nada'), []
 
     it 'should return true for add() of new value', ->
-      assert.equal store.add('new', 'value'), true
+
+      assert.deepEqual store.add(), error:'No key specified'
+      assert.deepEqual store.add('key'), error:'No value specified'
+
+      assert.deepEqual store.add('new', 'value'), addedTo:undefined
       assert.equal store.array[0].new, 'value'
 
     it 'should return true for add() to existing value', ->
-      assert.equal store.add('new', 'value2'), true
+      assert.deepEqual store.add('new', 'value2'), addedTo:'value'
       assert.deepEqual store.array[0].new, [ 'value', 'value2' ]
       # reset
       delete store.array[0].new
 
     it 'should return true for remove()', ->
       store.array[0].out = 'remove'
-      assert.equal store.remove('out'), true
+      assert.deepEqual store.remove('out'), removed:'remove'
       assert.equal store.array[0].out, undefined, 'should have removed it'
 
     it 'should return true for set() initial', ->
       assert.equal store.array[0].over, undefined, 'should not be an "over" value'
-      assert.equal store.set('over', 'value'), true
+      assert.deepEqual store.set('over', 'value'), replaced:undefined
       assert.equal store.array[0].over, 'value'
       # reset
       delete store.array[0].over
@@ -350,7 +356,7 @@ describe 'test value store', ->
     it 'should return true for set() overwrite', ->
       store.array[0].over = 'value'
       assert.equal store.array[0].over, 'value', 'should be a value to overwrite'
-      assert.equal store.set('over', 'value2'), true
+      assert.deepEqual store.set('over', 'value2'), replaced:'value'
       assert.equal store.array[0].over, 'value2'
       # reset
       delete store.array[0].over
@@ -380,12 +386,11 @@ describe 'test value store', ->
       assert.deepEqual store.array[1], {
         __source:
           file: file
+          format: 'json'
           fn: 'append'
       }
       # reset
       store.array.pop()
-      # ensure it's empty again
-      delete require.cache[file].exports.__source
 
     it 'should return true for prepend(object)', ->
       assert store.array, 'array should exist'
@@ -412,12 +417,11 @@ describe 'test value store', ->
       assert.deepEqual store.array[0], {
         __source:
           file: file
+          format: 'json'
           fn: 'prepend'
       }
       # reset
       store.array.shift()
-      # ensure it's empty again
-      delete require.cache[file].exports.__source
 
     it 'should return object in `removed` for shift()', ->
       hold = store.array[0]
@@ -430,3 +434,28 @@ describe 'test value store', ->
       assert.deepEqual store.pop(), removed:[hold]
       # reset
       store.array.push hold
+
+
+
+  describe 'built with initial empty object', ->
+
+    store = buildStore [{}, {}, {}]
+
+    it 'should return one for count', ->
+      assert.equal store.count(), 3
+
+    it 'should return objects in `removed` for shift()', ->
+      array = [
+        {__source:'constructor'}, {__source:'constructor'}, {__source:'constructor'}
+      ]
+      assert.deepEqual store.shift(3), removed:array
+      # reset
+      store.array = store.array.concat array
+
+    it 'should return objects in `removed` for pop()', ->
+      array = [
+        {__source:'constructor'}, {__source:'constructor'}, {__source:'constructor'}
+      ]
+      assert.deepEqual store.pop(3), removed:array
+      # reset
+      store.array = store.array.concat array
