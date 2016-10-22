@@ -1,4 +1,10 @@
 
+0.3.4 - Released 2016/10/22
+
+1. fixed `get()` to search when index isn't specified
+2. fixed `has()` to search when index isn't specified
+3. fixed `source()` to assume the worst and protect against a bad index
+
 0.3.3 - Released 2016/10/22
 
 1. add a newline to `write()` output
