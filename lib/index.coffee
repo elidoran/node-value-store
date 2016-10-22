@@ -254,7 +254,7 @@ class ValueStore
     # basically, it's ini only if they say so or the extension is, otherwise,
     # it's json
     stringify =
-      if options.format is 'ini' or ext is 'ini' then ini.stringify
+      if options?.format is 'ini' or ext is 'ini' then ini.stringify
       else JSON.stringify
 
     # wrap it so we can return an `fs` modules error as an object
