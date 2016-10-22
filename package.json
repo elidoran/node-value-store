@@ -1,6 +1,6 @@
 {
   "name": "value-store",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Get/set values on hierarchy of objects",
   "main": "lib",
   "keywords": [
