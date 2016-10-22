@@ -121,6 +121,9 @@ class ValueStore
   # it overwrites a current value if there is one.
   set: (key, value, index, add) ->
 
+    # jump to the front, if there are no objects... error
+    unless @array.length > 0 then return error:'Invalid index: ' + (index ? 0)
+
     # make sure we have what we need
     unless key? then return error:'No key specified'
 
@@ -260,13 +263,17 @@ class ValueStore
   # it returns the ones removed
   shift: (count = 1) ->
     if count < 1 then return removed:[]
-    removed:@array.shift()
+    result = removed:@array[0...count]
+    if count > 1 then @array.splice 0, count else @array.shift()
+    return result
 
   # like with an array, remove sources from the end of the array
   # it returns the ones removed
   pop: (count = 1) ->
     if count < 1 then return removed:[]
-    removed:@array.pop()
+    result = removed:@array[-count..]
+    if count > 1 then @array.splice -count, count else @array.pop()
+    return result
 
 
   write: (index = 0, options) ->
