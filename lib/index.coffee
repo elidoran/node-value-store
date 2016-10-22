@@ -112,14 +112,14 @@ class ValueStore
   add: (key, value, index = 0) -> @set key, value, index, true
 
   # delete the key from the indexed source, defaults to the first one
-  remove: (key, index = 0) -> @set key, undefined, index, false
+  remove: (key, index) -> @set key, undefined, index, false
 
   # used by add() with `add` = true
   # used by remove() with `add` = false
   # is set() when `add` is undefined
   # set() will set this value as "the value",
   # it overwrites a current value if there is one.
-  set: (key, value, index = 0, add) ->
+  set: (key, value, index, add) ->
 
     # make sure we have what we need
     unless key? then return error:'No key specified'
@@ -129,13 +129,32 @@ class ValueStore
     unless add is false or value? then return error:'No value specified'
 
     # also index must reference a valid source
-    unless index > -1 and index < @array.length
-      return error:'Invalid index: '+index
+    if index?
+      unless index > -1 and index < @array.length
+        return error:'Invalid index: '+index
+
+    # if we're removing and an index wasn't specified, then find the key
+    else if add is false
+      index = @in key
+
+      # if we don't find it, then we can't remove it.
+      # we could return an error, but, let's instead consider remove()
+      # an order to ensure the key doesn't exist.
+      # if we don't find it, then, we've already succeeded.
+      # don't error, but, don't return the value which was removed.
+      # when we find it to remove, return its value so they know we found it.
+      if index is -1 then return
+
+    # otherwise, use index = 0 for set/add
+    else index = 0
+
+    # get current value
+    existingValue = @array?[index]?[key]
+
+    result = {}
 
     # add() sends us here
     if add is true # then combine values into an array
-      # get current value
-      existingValue = @array[index][key]
 
       # if there is a current value then we need to combine them
       if existingValue?
@@ -151,15 +170,19 @@ class ValueStore
       # otherwise it's the same as setting the first value
       else @array[index][key] = value
 
+      result.addedTo = existingValue
+
     # remove() sends us here
     else if add is false # then remove value
+      result.removed = existingValue
       delete @array[index][key]
 
     # set() gets here
     else # set the value
+      result.replaced = existingValue
       @array[index][key] = value
 
-    return true
+    return result
 
   # object or a string referencing a json file to require()
   # put it at the end of the array
