@@ -1,3 +1,6 @@
+0.3.2 - Released 2016/10/22
+
+1. fixed bug in `write()` when accessing options.format the options may be null 
 
 0.3.1 - Released 2016/10/22
 
