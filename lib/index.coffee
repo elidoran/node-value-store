@@ -48,13 +48,22 @@ class ValueStore
   count: () -> @array.length
 
   # where did the specified source come from
-  source: (index = 0) -> @array[index]?.__source
+  source: (index = 0) -> @array?[index]?.__source
 
   # get a value from a source, get from the first one by default
-  get: (key, index = 0) -> @array?[index]?[key]
+  get: (key, index) ->
+    # if they specified an exact object, then, use it
+    if index? then return @array?[index]?[key]
+
+    # search for the object with the key
+    index = @in key
+
+    # return the value if the key was found, or, undefined...
+    if index > -1 then @array[index][key] else undefined
 
   # same as get except return a boolean representing whether the value exists
-  has: (key, index = 0) -> @array?[index]?[key]?
+  has: (key, index) ->
+    if index? then @array?[index]?[key]? else @in(key) > -1
 
   # return the index of the first object source which contains the key
   in: (key) ->
