@@ -264,8 +264,8 @@ class ValueStore
       # in there when written to a file
       delete object.__source
 
-      # do the work
-      fs.writeFileSync file, stringify(object), 'utf8'
+      # do the work (add a newline at the end to ensure it's there...)
+      fs.writeFileSync file, stringify(object) + '\n', 'utf8'
 
     catch error
       # return error, include a good message and the thrown error
