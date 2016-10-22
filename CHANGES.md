@@ -1,3 +1,8 @@
+0.3.5 - Released 2016/10/22
+
+1. removed default index value of 0 from `set` and `remove`
+2. updated `set()` to find key to remove (when it's a remove operation)
+3. updated `set()` to return various results depending on actions taken
 
 0.3.4 - Released 2016/10/22
 
