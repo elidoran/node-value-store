@@ -1,4 +1,6 @@
 
+fs = require 'fs'
+corepath = require 'path'
 ini = require 'ini'
 
 readIni = (file) -> ini.parse fs.readFileSync(file, 'utf8')
@@ -227,6 +229,39 @@ class ValueStore
   pop: (count = 1) ->
     if count < 1 then return removed:[]
     removed:@array[-count..]
+
+  write: (index = 0, options) ->
+
+    # index must reference a valid source
+    unless index > -1 and index < @array.length
+      return error:'Invalid index: '+index
+
+    # get the object we're supposed to write out
+    object = @array[index]
+
+    # get the 'source' of that object
+    source = @source index
+
+    # source must be a file...or, it must be specified in options
+    file = options?.file ? source?.file
+    unless file?
+      return error:'No `file` in source #' + index + ' or in options'
+
+    ext = corepath.extname file
+
+    stringify =
+      if options.format is 'ini' or ext is 'ini' then ini.stringify
+      else JSON.stringify
+
+    try
+      delete object.__source
+      fs.writeFileSync file, stringify(object), 'utf8'
+    catch error
+      return error:'Failed to write source #'+index, reason:error
+    finally
+      object.__source = source
+
+    return
 
 # export a function which creates a ValueStore instance
 # it's not in a constructor so it can validate the input options and
