@@ -247,20 +247,35 @@ class ValueStore
     unless file?
       return error:'No `file` in source #' + index + ' or in options'
 
+    # get the extension of the file path so we can determine format
     ext = corepath.extname file
 
+    # choose stringify based on specified format option or file extension
+    # basically, it's ini only if they say so or the extension is, otherwise,
+    # it's json
     stringify =
       if options.format is 'ini' or ext is 'ini' then ini.stringify
       else JSON.stringify
 
+    # wrap it so we can return an `fs` modules error as an object
     try
+
+      # delete the __source because it's used by value-store, it shouldn't be
+      # in there when written to a file
       delete object.__source
+
+      # do the work
       fs.writeFileSync file, stringify(object), 'utf8'
+
     catch error
+      # return error, include a good message and the thrown error
       return error:'Failed to write source #'+index, reason:error
+
+    # restore the __source into the object
     finally
       object.__source = source
 
+    # all done
     return
 
 # export a function which creates a ValueStore instance
