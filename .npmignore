@@ -3,4 +3,5 @@ test/
 .DS_Store
 .git
 .gitignore
-
+CHANGES.MD
+.travis.yml
