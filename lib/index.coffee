@@ -1,10 +1,17 @@
-
 fs = require 'fs'
 corepath = require 'path'
 ini = require 'ini'
 
 readJson = (file) -> JSON.parse fs.readFileSync(file, 'utf8')
 readIni  = (file) -> ini.parse fs.readFileSync(file, 'utf8')
+
+setSource = (object, value) ->
+  Object.defineProperty object, '__source',
+    value: value
+    writable: false
+    enumerable: false
+    configurable: false
+  return
 
 # TODO:
 # consider extending EventEmitter to provide events when:
@@ -34,7 +41,7 @@ class ValueStore
           throw new Error 'ValueStore accepts only objects. Invalid element at ' + index + ': ' + element
 
         else # mark these are from the constructor, unless it's already set
-          element.__source ?= 'constructor'
+          unless element.__source? then setSource element, 'constructor'
 
     else # it was validated and is ready to go, so grab array and delete marker
       array = options.array
@@ -229,10 +236,10 @@ class ValueStore
 
           # record the source is a file and the function called to add it
           # record the format too
-          object.__source ?=
-            file: thing
+          unless object.__source? then setSource object,
+            file  : thing
             format: if parse is readJson then 'json' else 'ini'
-            fn  : if first then 'prepend' else 'append'
+            fn    : if first then 'prepend' else 'append'
 
 
         catch error
@@ -248,7 +255,8 @@ class ValueStore
       when 'object'
         # record the source is the function called to add it
         object = thing
-        object.__source ?= if first then 'prepend' else 'append'
+        unless object.__source?
+          setSource object, (if first then 'prepend' else 'append')
 
       else # bad type, error out!
         return error:'Must provide a string or object', value:thing
@@ -310,10 +318,6 @@ class ValueStore
     # wrap it so we can return an `fs` modules error as an object
     try
 
-      # delete the __source because it's used by value-store, it shouldn't be
-      # in there when written to a file
-      delete object.__source
-
       # do the work (add a newline at the end to ensure it's there...)
       fs.writeFileSync file, stringify() + '\n', 'utf8'
 
@@ -323,7 +327,7 @@ class ValueStore
 
     # restore the __source into the object
     finally
-      object.__source = source
+      setSource object, source
 
     # all done
     return
@@ -357,7 +361,7 @@ module.exports = (options) ->
       return error: 'ValueStore accepts only objects. Invalid element at ' + index + ': ' + element
 
     else # mark these are from the constructor
-      element.__source = 'constructor'
+      setSource element, 'constructor'
 
   # let constructor know we've validated the options
   options.__validated = true
