@@ -2,7 +2,10 @@
   "name": "value-store",
   "version": "0.3.6",
   "description": "Get/set values on hierarchy of objects",
-  "main": "lib",
+  "main": "lib/index.js",
+  "files": [
+    "lib/index.js"
+  ],
   "keywords": [
     "value",
     "store",
@@ -17,7 +20,7 @@
   "author": "Eli Doran <eli+npm@elidoran.com>",
   "license": "MIT",
   "scripts": {
-    "compile": "coffee --bare --compile lib",
+    "compile": "coffee --bare --compile --no-header lib",
     "clean": "rm -rf lib/*.js",
     "prepublish": "npm run compile",
     "postpublish": "npm run clean",
