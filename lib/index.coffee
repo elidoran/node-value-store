@@ -238,7 +238,7 @@ class ValueStore
         catch error
           # if it couldn't find the file then say so
           if error.code is 'MODULE_NOT_FOUND' or error.code is 'ENOENT'
-            return error:'File doesn\'t exist: '+thing
+            return error:'File doesn\'t exist: '+thing, exists:false
 
           # otherwise, be generic and include the real error object as `reason`
           return error:'Failed to require file', reason:error
