@@ -34,11 +34,12 @@ class ValueStore
       array = if Array.isArray(options) then options else options.array ? []
 
       # verify each element is an object
-      for element,index in array
+      for element, index in array
         if typeof element isnt 'object'
           # Note: throwing an error cuz we're in a constructor.
           # should use the exported builder function instead of the class
-          throw new Error 'ValueStore accepts only objects. Invalid element at ' + index + ': ' + element
+          throw new Error 'ValueStore accepts only objects. Invalid element at ' +
+            index + ': ' + element
 
         else # mark these are from the constructor, unless it's already set
           unless element.__source? then setSource element, 'constructor'
@@ -73,7 +74,7 @@ class ValueStore
 
   # return the index of the first object source which contains the key
   in: (key) ->
-    for object,index in @array
+    for object, index in @array
       if object[key]? then return index
 
     # didn't find it...
@@ -140,7 +141,7 @@ class ValueStore
     # also index must reference a valid source
     if index?
       unless index > -1 and index < @array.length
-        return error:'Invalid index: '+index
+        return error:'Invalid index: ' + index
 
     # if we're removing and an index wasn't specified, then find the key
     else if add is false
@@ -204,6 +205,7 @@ class ValueStore
   # used by both append() and prepend()
   # append() sets first = false
   # prepend() sets first = true
+  # coffeelint: disable cyclomatic_complexity
   _insert: (first, thing, options) ->
 
     switch typeof thing
@@ -244,10 +246,10 @@ class ValueStore
         catch error
           # if it couldn't find the file then say so
           if error.code is 'MODULE_NOT_FOUND' or error.code is 'ENOENT'
-            return error:'File doesn\'t exist: '+thing, exists:false
+            return error: 'File doesn\'t exist: ' + thing, exists: false
 
           # otherwise, be generic and include the real error object as `reason`
-          return error:'Failed to require file', reason:error
+          return error: 'Failed to require file', reason: error
 
 
       # objects only need their source set, unless it is already
@@ -258,7 +260,7 @@ class ValueStore
           setSource object, (if first then 'prepend' else 'append')
 
       else # bad type, error out!
-        return error:'Must provide a string or object', value:thing
+        return error: 'Must provide a string or object', value: thing
 
     # we made it, it's a good value, it has a __source, so add it in
     if first then @array.unshift object else @array.push object
@@ -270,7 +272,7 @@ class ValueStore
   # it returns the ones removed
   shift: (count = 1) ->
     if count < 1 then return removed:[]
-    result = removed:@array[0...count]
+    result = removed: @array[0...count]
     if count > 1 then @array.splice 0, count else @array.shift()
     return result
 
@@ -278,7 +280,7 @@ class ValueStore
   # it returns the ones removed
   pop: (count = 1) ->
     if count < 1 then return removed:[]
-    result = removed:@array[-count..]
+    result = removed: @array[-count..]
     if count > 1 then @array.splice -count, count else @array.pop()
     return result
 
@@ -287,7 +289,7 @@ class ValueStore
 
     # index must reference a valid source
     unless index > -1 and index < @array.length
-      return error:'Invalid index: '+index
+      return error: 'Invalid index: ' + index
 
     # get the object we're supposed to write out
     object = @array[index]
@@ -322,7 +324,7 @@ class ValueStore
 
     catch error
       # return error, include a good message and the thrown error
-      return error:'Failed to write source #'+index, reason:error
+      return error: 'Failed to write source #' + index, reason: error
 
     # restore the __source into the object
     finally
@@ -354,7 +356,7 @@ module.exports = (options) ->
     array = []
     options = array:array
 
-  for element,index in array
+  for element, index in array
     if typeof element isnt 'object'
       # Note: returning an object with error property, not throwing an error
       return error: 'ValueStore accepts only objects. Invalid element at ' + index + ': ' + element
