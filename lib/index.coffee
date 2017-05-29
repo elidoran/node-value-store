@@ -23,13 +23,13 @@ setSource = (object, value) ->
 
 class ValueStore
 
-  constructor: (options) ->
+  constructor: (options, validated) ->
 
     # builder function can validate and return an error instead of throwing it
-    # so, it marks it with __validated.
+    # so, it tells us validated=true.
     # if that doesn't exist, then, we need to do it here, and, in a constructor
     # we can't return an error, so, we must throw it instead
-    unless options.__validated
+    unless validated
       # find array as options object, in options object, or create an empty one
       array = if Array.isArray(options) then options else options.array ? []
 
@@ -43,9 +43,8 @@ class ValueStore
         else # mark these are from the constructor, unless it's already set
           unless element.__source? then setSource element, 'constructor'
 
-    else # it was validated and is ready to go, so grab array and delete marker
+    else # it was validated and is ready to go, so grab array
       array = options.array
-      delete array.__validated
 
     # store it
     @array = array
@@ -118,7 +117,7 @@ class ValueStore
   # adds to the indexed source, defaults to the first one
   add: (key, value, index = 0) -> @set key, value, index, true
 
-  # delete the key from the indexed source, defaults to the first one
+  # remove the key from the indexed source, defaults to the first one
   remove: (key, index) -> @set key, undefined, index, false
 
   # used by add() with `add` = true
@@ -185,7 +184,7 @@ class ValueStore
     # remove() sends us here
     else if add is false # then remove value
       result.removed = existingValue
-      delete @array[index][key]
+      @array[index][key] = undefined
 
     # set() gets here
     else # set the value
@@ -363,10 +362,7 @@ module.exports = (options) ->
     else # mark these are from the constructor
       setSource element, 'constructor'
 
-  # let constructor know we've validated the options
-  options.__validated = true
-
-  new ValueStore options
+  new ValueStore options, true # true = validated
 
 # export the class as a sub property on the function
 module.exports.ValueStore = ValueStore
