@@ -143,6 +143,7 @@ describe 'test value store', ->
       }
 
       assert.deepEqual store.append('./nonexistent.json'), {
+        exists: false,
         error:'File doesn\'t exist: ' + corepath.resolve './nonexistent.json'
       }
 
@@ -174,6 +175,7 @@ describe 'test value store', ->
       }
 
       assert.deepEqual store.prepend('./nonexistent.json'), {
+        exists: false,
         error:'File doesn\'t exist: ' + corepath.resolve './nonexistent.json'
       }
 
@@ -240,7 +242,8 @@ describe 'test value store', ->
       assert store.append({appended:true})
       assert store.array, 'array should still exist'
       assert.equal store.array.length, 1, 'array should have one source'
-      assert.deepEqual store.array[0], {appended:true, __source:'append'}
+      assert.equal store.array[0].appended, true
+      assert.equal store.array[0].__source, 'append'
       # reset
       store.array.pop()
 
@@ -254,11 +257,10 @@ describe 'test value store', ->
 
       assert.equal store.array.length, 1, 'array should have new object'
 
-      assert.deepEqual store.array[0], {
-        __source:
-          file: file
-          format: 'json'
-          fn: 'append'
+      assert.deepEqual store.array[0].__source, {
+        file: file
+        format: 'json'
+        fn: 'append'
       }
       # reset
       store.array.pop()
@@ -269,7 +271,8 @@ describe 'test value store', ->
       assert store.prepend({prepended:true})
       assert store.array, 'array should still exist'
       assert.equal store.array.length, 1, 'array should have one source'
-      assert.deepEqual store.array[0], {prepended:true, __source:'prepend'}
+      assert.equal store.array[0].prepended, true
+      assert.equal store.array[0].__source, 'prepend'
       # reset
       store.array.pop()
 
@@ -283,11 +286,10 @@ describe 'test value store', ->
 
       assert.equal store.array.length, 1, 'array should have new object'
 
-      assert.deepEqual store.array[0], {
-        __source:
-          file: file
-          format: 'json'
-          fn: 'prepend'
+      assert.deepEqual store.array[0].__source, {
+        file: file
+        format: 'json'
+        fn: 'prepend'
       }
       # reset
       store.array.pop()
@@ -367,8 +369,9 @@ describe 'test value store', ->
       assert store.append({appended:true})
       assert store.array, 'array should still exist'
       assert.equal store.array.length, 2, 'array should have two'
-      assert.deepEqual store.array[0], {__source:'constructor'}
-      assert.deepEqual store.array[1], {appended:true, __source:'append'}
+      assert.equal store.array[0].__source, 'constructor'
+      assert.equal store.array[1].appended, true
+      assert.equal store.array[1].__source, 'append'
       # reset
       store.array.pop()
 
@@ -382,12 +385,11 @@ describe 'test value store', ->
 
       assert.equal store.array.length, 2, 'array should have two'
 
-      assert.deepEqual store.array[0], {__source:'constructor'}
-      assert.deepEqual store.array[1], {
-        __source:
-          file: file
-          format: 'json'
-          fn: 'append'
+      assert.deepEqual store.array[0].__source, 'constructor'
+      assert.deepEqual store.array[1].__source, {
+        file: file
+        format: 'json'
+        fn: 'append'
       }
       # reset
       store.array.pop()
@@ -398,8 +400,9 @@ describe 'test value store', ->
       assert store.prepend({prepended:true})
       assert store.array, 'array should still exist'
       assert.equal store.array.length, 2, 'array should have two'
-      assert.deepEqual store.array[0], {prepended:true, __source:'prepend'}
-      assert.deepEqual store.array[1], {__source:'constructor'}
+      assert.deepEqual store.array[0].prepended, true
+      assert.deepEqual store.array[0].__source, 'prepend'
+      assert.deepEqual store.array[1].__source, 'constructor'
       # reset
       store.array.shift()
 
@@ -413,12 +416,11 @@ describe 'test value store', ->
 
       assert.equal store.array.length, 2, 'array should have two'
 
-      assert.deepEqual store.array[1], {__source:'constructor'}
-      assert.deepEqual store.array[0], {
-        __source:
-          file: file
-          format: 'json'
-          fn: 'prepend'
+      assert.deepEqual store.array[1].__source, 'constructor'
+      assert.deepEqual store.array[0].__source, {
+        file: file
+        format: 'json'
+        fn: 'prepend'
       }
       # reset
       store.array.shift()
@@ -445,17 +447,15 @@ describe 'test value store', ->
       assert.equal store.count(), 3
 
     it 'should return objects in `removed` for shift()', ->
-      array = [
-        {__source:'constructor'}, {__source:'constructor'}, {__source:'constructor'}
-      ]
-      assert.deepEqual store.shift(3), removed:array
+      array = [ {}, {}, {} ]
+      shifted = store.shift 3
+      assert.deepEqual shifted, removed:array
       # reset
-      store.array = store.array.concat array
+      store.array.unshift.apply store.array, shifted.removed
 
     it 'should return objects in `removed` for pop()', ->
-      array = [
-        {__source:'constructor'}, {__source:'constructor'}, {__source:'constructor'}
-      ]
-      assert.deepEqual store.pop(3), removed:array
+      array = [ {}, {}, {} ]
+      popped = store.pop 3
+      assert.deepEqual popped, removed:array
       # reset
-      store.array = store.array.concat array
+      store.array.push.apply store.array, popped.removed
