@@ -1,4 +1,4 @@
-# ValueStore
+# value-store
 [![Build Status](https://travis-ci.org/elidoran/node-value-store.svg?branch=master)](https://travis-ci.org/elidoran/node-value-store)
 [![Dependency Status](https://gemnasium.com/elidoran/node-value-store.png)](https://gemnasium.com/elidoran/node-value-store)
 [![npm version](https://badge.fury.io/js/value-store.svg)](http://badge.fury.io/js/value-store)
