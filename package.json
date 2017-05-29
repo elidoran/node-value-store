@@ -20,6 +20,7 @@
   "author": "Eli Doran <eli+npm@elidoran.com>",
   "license": "MIT",
   "scripts": {
+    "lint": "coffeelint -f build/coffeelint.json lib",
     "compile": "coffee --bare --compile --no-header lib",
     "clean": "rm -rf lib/*.js",
     "prepublish": "npm run compile",
@@ -28,7 +29,11 @@
     "test4": "nave use 4.8 npm test",
     "test6": "nave use 6.10 npm test",
     "test7": "nave use 7.10 npm test",
-    "test-all": "npm run test4 && npm run test6 && npm run test7"
+    "test-all": "npm run test4 && npm run test6 && npm run test7",
+    "precoverage": "npm run clean",
+    "coverage": "istanbul cover -x 'benchmark/**' -x 'build/**' -x 'docs/**' -x 'examples/**' _mocha -- --compilers coffee:coffee-script/register --require build/coverage.js -R spec test/lib",
+    "precoverage-lcov": "npm run clean",
+    "coverage-lcov": "istanbul cover -x 'benchmark/**' -x 'build/**' -x 'docs/**' -x 'examples/**' _mocha --report lcovonly -- --compilers coffee:coffee-script/register --require build/coverage.js -R spec test/lib"
   },
   "repository": {
     "type": "git",
@@ -37,6 +42,7 @@
   "bugs": "http://github.com/elidoran/node-value-store/issues",
   "devDependencies": {
     "coffee-script": "^1.12.6",
+    "coffeelint": "^1.16.0",
     "coveralls": "^2.13.1",
     "istanbul": "^0.4.5",
     "mocha": "^3.4.2",
