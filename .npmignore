@@ -1,7 +1,12 @@
 *.coffee
-test/
 .DS_Store
 .git
 .gitignore
-CHANGES.MD
-.travis.yml
+.coveralls.yml
+
+benchmark/
+build/
+coverage/
+docs/
+examples/
+test/
